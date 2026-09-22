@@ -8,7 +8,14 @@ import { PrismaService } from '../../../database/prisma.service';
 import { CriarLocadorDto } from '../dto/create-locador.dto';
 import { AtualizarLocadorDto } from '../dto/update-locador.dto';
 import { StatusLocador } from '../enums/status-locador.enum';
+import { TipoPessoaLocador } from '../enums/tipo-pessoa-locador.enum';
 import { LocadorMapper } from '../mappers/locador.mapper';
+
+const INCLUDE_LOCADOR_COMPLETO = {
+  endereco_locador: true,
+  locador_pessoa_fisica: true,
+  locador_pessoa_juridica: true,
+};
 
 function isPrismaUniqueConstraintError(error: unknown): boolean {
   return (
@@ -19,6 +26,14 @@ function isPrismaUniqueConstraintError(error: unknown): boolean {
   );
 }
 
+const PAPEL_ADMIN = 'ADMIN';
+
+// Corretores (USER) enxergam e alteram apenas os locadores que cadastraram. O ADMIN acessa todos:
+// para ele o filtro por usuário é omitido (objeto vazio no "where").
+function filtroDeAcesso(usuarioId: number, papel?: string) {
+  return papel === PAPEL_ADMIN ? {} : { usuario_id: BigInt(usuarioId) };
+}
+
 @Injectable()
 export class LocadorService {
   constructor(private readonly prisma: PrismaService) {}
@@ -27,34 +42,73 @@ export class LocadorService {
     criarLocadorDto: CriarLocadorDto,
     usuarioIdCorretorLogado: number,
   ) {
+    if (criarLocadorDto.tipoPessoa === TipoPessoaLocador.FISICA) {
+      if (!criarLocadorDto.nome || !criarLocadorDto.cpf) {
+        throw new BadRequestException(
+          'Locador pessoa física requer nome e CPF.',
+        );
+      }
+    }
+
+    if (criarLocadorDto.tipoPessoa === TipoPessoaLocador.JURIDICA) {
+      if (!criarLocadorDto.razaoSocial || !criarLocadorDto.cnpj) {
+        throw new BadRequestException(
+          'Locador pessoa jurídica requer razão social e CNPJ.',
+        );
+      }
+    }
+
     try {
-      const locadorCriado = await this.prisma.locador.create({
-        data: {
-          usuario_id: BigInt(usuarioIdCorretorLogado),
-          nome: criarLocadorDto.nome,
-          cpf: criarLocadorDto.cpf,
-          email: criarLocadorDto.email,
-          endereco_locador: {
-            create: {
-              logradouro: criarLocadorDto.endereco.logradouro,
-              numero: criarLocadorDto.endereco.numero,
-              complemento: criarLocadorDto.endereco.complemento,
-              bairro: criarLocadorDto.endereco.bairro,
-              cidade: criarLocadorDto.endereco.cidade,
-              estado: criarLocadorDto.endereco.estado,
-              cep: criarLocadorDto.endereco.cep,
+      const locadorCriado = await this.prisma.$transaction(async (tx) => {
+        const locador = await tx.locador.create({
+          data: {
+            usuario_id: BigInt(usuarioIdCorretorLogado),
+            tipo_pessoa: criarLocadorDto.tipoPessoa,
+            email: criarLocadorDto.email,
+            endereco_locador: {
+              create: {
+                logradouro: criarLocadorDto.endereco.logradouro,
+                numero: criarLocadorDto.endereco.numero,
+                complemento: criarLocadorDto.endereco.complemento,
+                bairro: criarLocadorDto.endereco.bairro,
+                cidade: criarLocadorDto.endereco.cidade,
+                estado: criarLocadorDto.endereco.estado,
+                cep: criarLocadorDto.endereco.cep,
+              },
             },
           },
-        },
-        include: {
-          endereco_locador: true,
-        },
+        });
+
+        if (criarLocadorDto.tipoPessoa === TipoPessoaLocador.FISICA) {
+          await tx.locador_pessoa_fisica.create({
+            data: {
+              locador_id: locador.id,
+              nome: criarLocadorDto.nome!,
+              cpf: criarLocadorDto.cpf!,
+              rg: criarLocadorDto.rg,
+            },
+          });
+        } else {
+          await tx.locador_pessoa_juridica.create({
+            data: {
+              locador_id: locador.id,
+              razao_social: criarLocadorDto.razaoSocial!,
+              cnpj: criarLocadorDto.cnpj!,
+              inscricao_estadual: criarLocadorDto.inscricaoEstadual,
+            },
+          });
+        }
+
+        return tx.locador.findUniqueOrThrow({
+          where: { id: locador.id },
+          include: INCLUDE_LOCADOR_COMPLETO,
+        });
       });
 
       return LocadorMapper.paraResposta(locadorCriado);
     } catch (error) {
       if (isPrismaUniqueConstraintError(error)) {
-        throw new ConflictException('CPF ou e-mail já cadastrado.');
+        throw new ConflictException('CPF, CNPJ ou e-mail já cadastrado.');
       }
 
       throw error;
@@ -64,6 +118,7 @@ export class LocadorService {
   async listarLocadores(
     usuarioIdCorretorLogado: number,
     status?: StatusLocador,
+    papel?: string,
   ) {
     if (!usuarioIdCorretorLogado || usuarioIdCorretorLogado <= 0) {
       throw new BadRequestException('ID do corretor logado inválido.');
@@ -73,12 +128,10 @@ export class LocadorService {
 
     const locadores = await this.prisma.locador.findMany({
       where: {
-        usuario_id: BigInt(usuarioIdCorretorLogado),
+        ...filtroDeAcesso(usuarioIdCorretorLogado, papel),
         status: statusFiltro,
       },
-      include: {
-        endereco_locador: true,
-      },
+      include: INCLUDE_LOCADOR_COMPLETO,
       orderBy: {
         id: 'desc',
       },
@@ -87,7 +140,11 @@ export class LocadorService {
     return LocadorMapper.paraListaResposta(locadores);
   }
 
-  async buscarLocadorPorId(id: number, usuarioIdCorretorLogado: number) {
+  async buscarLocadorPorId(
+    id: number,
+    usuarioIdCorretorLogado: number,
+    papel?: string,
+  ) {
     if (!id || id <= 0) {
       throw new BadRequestException('ID do locador inválido.');
     }
@@ -99,11 +156,9 @@ export class LocadorService {
     const locador = await this.prisma.locador.findFirst({
       where: {
         id: BigInt(id),
-        usuario_id: BigInt(usuarioIdCorretorLogado),
+        ...filtroDeAcesso(usuarioIdCorretorLogado, papel),
       },
-      include: {
-        endereco_locador: true,
-      },
+      include: INCLUDE_LOCADOR_COMPLETO,
     });
 
     if (!locador) {
@@ -117,6 +172,7 @@ export class LocadorService {
     id: number,
     atualizarLocadorDto: AtualizarLocadorDto,
     usuarioIdCorretorLogado: number,
+    papel?: string,
   ) {
     if (!id || id <= 0) {
       throw new BadRequestException('ID do locador inválido.');
@@ -129,61 +185,133 @@ export class LocadorService {
     const locadorExistente = await this.prisma.locador.findFirst({
       where: {
         id: BigInt(id),
-        usuario_id: BigInt(usuarioIdCorretorLogado),
+        ...filtroDeAcesso(usuarioIdCorretorLogado, papel),
       },
+      include: INCLUDE_LOCADOR_COMPLETO,
     });
 
     if (!locadorExistente) {
       throw new NotFoundException('Locador não encontrado.');
     }
 
+    const tipoPessoaFinal =
+      atualizarLocadorDto.tipoPessoa ?? locadorExistente.tipo_pessoa;
+
     try {
-      const locadorAtualizado = await this.prisma.$transaction(
-        async (prisma) => {
-          if (atualizarLocadorDto.endereco) {
-            await prisma.endereco_locador.update({
-              where: {
-                locador_id: BigInt(id),
-              },
-              data: {
-                logradouro: atualizarLocadorDto.endereco.logradouro,
-                numero: atualizarLocadorDto.endereco.numero,
-                complemento: atualizarLocadorDto.endereco.complemento,
-                bairro: atualizarLocadorDto.endereco.bairro,
-                cidade: atualizarLocadorDto.endereco.cidade,
-                estado: atualizarLocadorDto.endereco.estado,
-                cep: atualizarLocadorDto.endereco.cep,
-              },
+      const locadorAtualizado = await this.prisma.$transaction(async (tx) => {
+        if (atualizarLocadorDto.endereco) {
+          await tx.endereco_locador.update({
+            where: {
+              locador_id: BigInt(id),
+            },
+            data: {
+              logradouro: atualizarLocadorDto.endereco.logradouro,
+              numero: atualizarLocadorDto.endereco.numero,
+              complemento: atualizarLocadorDto.endereco.complemento,
+              bairro: atualizarLocadorDto.endereco.bairro,
+              cidade: atualizarLocadorDto.endereco.cidade,
+              estado: atualizarLocadorDto.endereco.estado,
+              cep: atualizarLocadorDto.endereco.cep,
+            },
+          });
+        }
+
+        if (tipoPessoaFinal === TipoPessoaLocador.FISICA) {
+          if (locadorExistente.locador_pessoa_juridica) {
+            await tx.locador_pessoa_juridica.delete({
+              where: { locador_id: BigInt(id) },
             });
           }
 
-          return prisma.locador.update({
-            where: {
-              id: BigInt(id),
-            },
-            data: {
-              nome: atualizarLocadorDto.nome,
-              cpf: atualizarLocadorDto.cpf,
-              email: atualizarLocadorDto.email,
-            },
-            include: {
-              endereco_locador: true,
-            },
-          });
-        },
-      );
+          if (locadorExistente.locador_pessoa_fisica) {
+            await tx.locador_pessoa_fisica.update({
+              where: { locador_id: BigInt(id) },
+              data: {
+                nome: atualizarLocadorDto.nome,
+                cpf: atualizarLocadorDto.cpf,
+                rg: atualizarLocadorDto.rg,
+              },
+            });
+          } else {
+            if (!atualizarLocadorDto.nome || !atualizarLocadorDto.cpf) {
+              throw new BadRequestException(
+                'Locador pessoa física requer nome e CPF.',
+              );
+            }
+
+            await tx.locador_pessoa_fisica.create({
+              data: {
+                locador_id: BigInt(id),
+                nome: atualizarLocadorDto.nome,
+                cpf: atualizarLocadorDto.cpf,
+                rg: atualizarLocadorDto.rg,
+              },
+            });
+          }
+        } else if (tipoPessoaFinal === TipoPessoaLocador.JURIDICA) {
+          if (locadorExistente.locador_pessoa_fisica) {
+            await tx.locador_pessoa_fisica.delete({
+              where: { locador_id: BigInt(id) },
+            });
+          }
+
+          if (locadorExistente.locador_pessoa_juridica) {
+            await tx.locador_pessoa_juridica.update({
+              where: { locador_id: BigInt(id) },
+              data: {
+                razao_social: atualizarLocadorDto.razaoSocial,
+                cnpj: atualizarLocadorDto.cnpj,
+                inscricao_estadual: atualizarLocadorDto.inscricaoEstadual,
+              },
+            });
+          } else {
+            if (
+              !atualizarLocadorDto.razaoSocial ||
+              !atualizarLocadorDto.cnpj
+            ) {
+              throw new BadRequestException(
+                'Locador pessoa jurídica requer razão social e CNPJ.',
+              );
+            }
+
+            await tx.locador_pessoa_juridica.create({
+              data: {
+                locador_id: BigInt(id),
+                razao_social: atualizarLocadorDto.razaoSocial,
+                cnpj: atualizarLocadorDto.cnpj,
+                inscricao_estadual: atualizarLocadorDto.inscricaoEstadual,
+              },
+            });
+          }
+        }
+
+        return tx.locador.update({
+          where: {
+            id: BigInt(id),
+          },
+          data: {
+            tipo_pessoa: atualizarLocadorDto.tipoPessoa,
+            email: atualizarLocadorDto.email,
+          },
+          include: INCLUDE_LOCADOR_COMPLETO,
+        });
+      });
 
       return LocadorMapper.paraResposta(locadorAtualizado);
     } catch (error) {
       if (isPrismaUniqueConstraintError(error)) {
-        throw new ConflictException('CPF ou e-mail já cadastrado.');
+        throw new ConflictException('CPF, CNPJ ou e-mail já cadastrado.');
       }
 
       throw error;
     }
   }
 
-  async inativarLocador(id: number, usuarioIdCorretorLogado: number) {
+  async inativarLocador(
+    id: number,
+    usuarioIdCorretorLogado: number,
+    papel?: string,
+  ) {
     if (!id || id <= 0) {
       throw new BadRequestException('ID do locador inválido.');
     }
@@ -195,7 +323,7 @@ export class LocadorService {
     const locadorExistente = await this.prisma.locador.findFirst({
       where: {
         id: BigInt(id),
-        usuario_id: BigInt(usuarioIdCorretorLogado),
+        ...filtroDeAcesso(usuarioIdCorretorLogado, papel),
       },
     });
 
@@ -210,15 +338,17 @@ export class LocadorService {
       data: {
         status: StatusLocador.INATIVO,
       },
-      include: {
-        endereco_locador: true,
-      },
+      include: INCLUDE_LOCADOR_COMPLETO,
     });
 
     return LocadorMapper.paraResposta(locadorInativado);
   }
 
-  async reativarLocador(id: number, usuarioIdCorretorLogado: number) {
+  async reativarLocador(
+    id: number,
+    usuarioIdCorretorLogado: number,
+    papel?: string,
+  ) {
     if (!id || id <= 0) {
       throw new BadRequestException('ID do locador inválido.');
     }
@@ -230,7 +360,7 @@ export class LocadorService {
     const locadorExistente = await this.prisma.locador.findFirst({
       where: {
         id: BigInt(id),
-        usuario_id: BigInt(usuarioIdCorretorLogado),
+        ...filtroDeAcesso(usuarioIdCorretorLogado, papel),
       },
     });
 
@@ -245,15 +375,17 @@ export class LocadorService {
       data: {
         status: StatusLocador.ATIVO,
       },
-      include: {
-        endereco_locador: true,
-      },
+      include: INCLUDE_LOCADOR_COMPLETO,
     });
 
     return LocadorMapper.paraResposta(locadorReativado);
   }
 
-  async removerLocadorDefinitivo(id: number, usuarioIdCorretorLogado: number) {
+  async removerLocadorDefinitivo(
+    id: number,
+    usuarioIdCorretorLogado: number,
+    papel?: string,
+  ) {
     if (!id || id <= 0) {
       throw new BadRequestException('ID do locador inválido.');
     }
@@ -265,7 +397,7 @@ export class LocadorService {
     const locadorExistente = await this.prisma.locador.findFirst({
       where: {
         id: BigInt(id),
-        usuario_id: BigInt(usuarioIdCorretorLogado),
+        ...filtroDeAcesso(usuarioIdCorretorLogado, papel),
       },
     });
 
@@ -273,17 +405,22 @@ export class LocadorService {
       throw new NotFoundException('Locador não encontrado.');
     }
 
-    // Como pode haver endereco_locador atrelado, vamos deletar em transação (se a FK não for cascade)
-    // Se a FK for cascade, delete apenas locador. Vamos assumir que precisamos apagar o endereço antes se for 1:1, ou podemos confiar no cascade se houver.
-    // Vamos usar transação para ser seguro
-    await this.prisma.$transaction(async (prisma) => {
-      // Deletar endereço associado primeiro (para evitar erro de FK)
-      await prisma.endereco_locador.deleteMany({
+    // As tabelas de endereço e pessoa física/jurídica possuem onDelete: Cascade,
+    // mas removemos explicitamente para garantir a limpeza mesmo sem suporte a FK.
+    await this.prisma.$transaction(async (tx) => {
+      await tx.endereco_locador.deleteMany({
         where: { locador_id: BigInt(id) },
       });
 
-      // Deletar locador
-      await prisma.locador.delete({
+      await tx.locador_pessoa_fisica.deleteMany({
+        where: { locador_id: BigInt(id) },
+      });
+
+      await tx.locador_pessoa_juridica.deleteMany({
+        where: { locador_id: BigInt(id) },
+      });
+
+      await tx.locador.delete({
         where: { id: BigInt(id) },
       });
     });

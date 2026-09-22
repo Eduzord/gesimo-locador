@@ -108,7 +108,11 @@ export class LocadorController {
     @UsuarioLogado() usuario: UsuarioAutenticado,
     @Query() query: ListarLocadoresQueryDto,
   ) {
-    return this.locadorService.listarLocadores(usuario.id, query.status);
+    return this.locadorService.listarLocadores(
+      usuario.id,
+      query.status,
+      usuario.role,
+    );
   }
 
   @Get(':id')
@@ -147,7 +151,7 @@ export class LocadorController {
     @UsuarioLogado() usuario: UsuarioAutenticado,
     @Param('id', ParseIntPipe) id: number,
   ) {
-    return this.locadorService.buscarLocadorPorId(id, usuario.id);
+    return this.locadorService.buscarLocadorPorId(id, usuario.id, usuario.role);
   }
 
   @Patch(':id')
@@ -196,6 +200,7 @@ export class LocadorController {
       id,
       atualizarLocadorDto,
       usuario.id,
+      usuario.role,
     );
   }
 
@@ -235,7 +240,7 @@ export class LocadorController {
     @UsuarioLogado() usuario: UsuarioAutenticado,
     @Param('id', ParseIntPipe) id: number,
   ) {
-    return this.locadorService.inativarLocador(id, usuario.id);
+    return this.locadorService.inativarLocador(id, usuario.id, usuario.role);
   }
 
   @Patch(':id/reativar')
@@ -273,7 +278,7 @@ export class LocadorController {
     @UsuarioLogado() usuario: UsuarioAutenticado,
     @Param('id', ParseIntPipe) id: number,
   ) {
-    return this.locadorService.reativarLocador(id, usuario.id);
+    return this.locadorService.reativarLocador(id, usuario.id, usuario.role);
   }
 
   @Delete(':id/hard')
@@ -312,6 +317,10 @@ export class LocadorController {
     @UsuarioLogado() usuario: UsuarioAutenticado,
     @Param('id', ParseIntPipe) id: number,
   ) {
-    return this.locadorService.removerLocadorDefinitivo(id, usuario.id);
+    return this.locadorService.removerLocadorDefinitivo(
+      id,
+      usuario.id,
+      usuario.role,
+    );
   }
 }

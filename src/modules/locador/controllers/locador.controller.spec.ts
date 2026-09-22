@@ -1,5 +1,6 @@
 import { Test, TestingModule } from '@nestjs/testing';
 import { StatusLocador } from '../enums/status-locador.enum';
+import { TipoPessoaLocador } from '../enums/tipo-pessoa-locador.enum';
 import { LocadorController } from './locador.controller';
 import { LocadorService } from '../services/locador.service';
 
@@ -24,6 +25,7 @@ describe('LocadorController', () => {
   const locadorResponseMock = {
     id: 1,
     usuarioId: 1,
+    tipoPessoa: TipoPessoaLocador.FISICA,
     nome: 'João da Silva',
     cpf: '12345678901',
     email: 'joao@email.com',
@@ -60,6 +62,7 @@ describe('LocadorController', () => {
 
   it('deve cadastrar locador usando o ID do usuário autenticado', async () => {
     const dto = {
+      tipoPessoa: TipoPessoaLocador.FISICA,
       nome: 'João da Silva',
       cpf: '12345678901',
       email: 'joao@email.com',
@@ -92,6 +95,7 @@ describe('LocadorController', () => {
     expect(locadorServiceMock.listarLocadores).toHaveBeenCalledWith(
       1,
       StatusLocador.ATIVO,
+      'USER',
     );
     expect(resultado).toEqual([locadorResponseMock]);
   });
@@ -101,7 +105,11 @@ describe('LocadorController', () => {
 
     const resultado = await controller.buscarLocadorPorId(usuarioMock, 1);
 
-    expect(locadorServiceMock.buscarLocadorPorId).toHaveBeenCalledWith(1, 1);
+    expect(locadorServiceMock.buscarLocadorPorId).toHaveBeenCalledWith(
+      1,
+      1,
+      'USER',
+    );
     expect(resultado).toEqual(locadorResponseMock);
   });
 
@@ -121,6 +129,7 @@ describe('LocadorController', () => {
       1,
       dto,
       1,
+      'USER',
     );
     expect(resultado.nome).toBe('João Atualizado');
   });
@@ -133,7 +142,11 @@ describe('LocadorController', () => {
 
     const resultado = await controller.inativarLocador(usuarioMock, 1);
 
-    expect(locadorServiceMock.inativarLocador).toHaveBeenCalledWith(1, 1);
+    expect(locadorServiceMock.inativarLocador).toHaveBeenCalledWith(
+      1,
+      1,
+      'USER',
+    );
     expect(resultado.status).toBe(StatusLocador.INATIVO);
   });
 
@@ -142,7 +155,11 @@ describe('LocadorController', () => {
 
     const resultado = await controller.reativarLocador(usuarioMock, 1);
 
-    expect(locadorServiceMock.reativarLocador).toHaveBeenCalledWith(1, 1);
+    expect(locadorServiceMock.reativarLocador).toHaveBeenCalledWith(
+      1,
+      1,
+      'USER',
+    );
     expect(resultado.status).toBe(StatusLocador.ATIVO);
   });
 });

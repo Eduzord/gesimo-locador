@@ -2,6 +2,7 @@ import { BadRequestException, NotFoundException } from '@nestjs/common';
 import { Test, TestingModule } from '@nestjs/testing';
 import { PrismaService } from '../../../database/prisma.service';
 import { StatusLocador } from '../enums/status-locador.enum';
+import { TipoPessoaLocador } from '../enums/tipo-pessoa-locador.enum';
 import { LocadorService } from './locador.service';
 
 describe('LocadorService', () => {
@@ -12,10 +13,25 @@ describe('LocadorService', () => {
       create: jest.fn(),
       findMany: jest.fn(),
       findFirst: jest.fn(),
+      findUniqueOrThrow: jest.fn(),
       update: jest.fn(),
+      delete: jest.fn(),
     },
     endereco_locador: {
       update: jest.fn(),
+      deleteMany: jest.fn(),
+    },
+    locador_pessoa_fisica: {
+      create: jest.fn(),
+      update: jest.fn(),
+      delete: jest.fn(),
+      deleteMany: jest.fn(),
+    },
+    locador_pessoa_juridica: {
+      create: jest.fn(),
+      update: jest.fn(),
+      delete: jest.fn(),
+      deleteMany: jest.fn(),
     },
     $transaction: jest.fn(),
   };
@@ -23,8 +39,7 @@ describe('LocadorService', () => {
   const locadorMock = {
     id: BigInt(1),
     usuario_id: BigInt(1),
-    nome: 'João da Silva',
-    cpf: '12345678901',
+    tipo_pessoa: TipoPessoaLocador.FISICA,
     email: 'joao@email.com',
     status: StatusLocador.ATIVO,
     criado_em: new Date('2026-05-23T10:00:00.000Z'),
@@ -39,6 +54,19 @@ describe('LocadorService', () => {
       estado: 'SP',
       cep: '01001000',
     },
+    locador_pessoa_fisica: {
+      locador_id: BigInt(1),
+      nome: 'João da Silva',
+      cpf: '12345678901',
+      rg: null,
+    },
+    locador_pessoa_juridica: null,
+  };
+
+  const INCLUDE_LOCADOR_COMPLETO = {
+    endereco_locador: true,
+    locador_pessoa_fisica: true,
+    locador_pessoa_juridica: true,
   };
 
   beforeEach(async () => {
@@ -67,9 +95,7 @@ describe('LocadorService', () => {
         usuario_id: BigInt(1),
         status: StatusLocador.ATIVO,
       },
-      include: {
-        endereco_locador: true,
-      },
+      include: INCLUDE_LOCADOR_COMPLETO,
       orderBy: {
         id: 'desc',
       },
@@ -79,11 +105,72 @@ describe('LocadorService', () => {
     expect(resultado[0]).toMatchObject({
       id: 1,
       usuarioId: 1,
+      tipoPessoa: TipoPessoaLocador.FISICA,
       nome: 'João da Silva',
       cpf: '12345678901',
       email: 'joao@email.com',
       status: StatusLocador.ATIVO,
     });
+  });
+
+  it('ADMIN lista os locadores de todos os corretores (sem filtro por usuário)', async () => {
+    prismaMock.locador.findMany.mockResolvedValue([locadorMock]);
+
+    await service.listarLocadores(99, undefined, 'ADMIN');
+
+    expect(prismaMock.locador.findMany).toHaveBeenCalledWith({
+      where: {
+        status: StatusLocador.ATIVO,
+      },
+      include: INCLUDE_LOCADOR_COMPLETO,
+      orderBy: {
+        id: 'desc',
+      },
+    });
+  });
+
+  it('USER continua restrito aos próprios locadores, mesmo com o papel informado', async () => {
+    prismaMock.locador.findMany.mockResolvedValue([locadorMock]);
+
+    await service.listarLocadores(2, undefined, 'USER');
+
+    expect(prismaMock.locador.findMany).toHaveBeenCalledWith(
+      expect.objectContaining({
+        where: { usuario_id: BigInt(2), status: StatusLocador.ATIVO },
+      }),
+    );
+  });
+
+  it('ADMIN busca, edita, inativa, reativa e exclui locador de outro corretor', async () => {
+    prismaMock.locador.findFirst.mockResolvedValue(locadorMock);
+    prismaMock.locador.update.mockResolvedValue(locadorMock);
+    prismaMock.$transaction.mockImplementation((fn: (tx: unknown) => unknown) =>
+      fn(prismaMock),
+    );
+
+    await service.buscarLocadorPorId(1, 99, 'ADMIN');
+    await service.inativarLocador(1, 99, 'ADMIN');
+    await service.reativarLocador(1, 99, 'ADMIN');
+    await service.removerLocadorDefinitivo(1, 99, 'ADMIN');
+
+    // Todas as buscas de existência ignoram o dono: filtram só pelo ID
+    for (const [argumentos] of prismaMock.locador.findFirst.mock.calls.slice(-4)) {
+      expect(argumentos.where).toEqual({ id: BigInt(1) });
+    }
+  });
+
+  it('USER não encontra locador de outro corretor', async () => {
+    prismaMock.locador.findFirst.mockResolvedValue(null);
+
+    await expect(service.buscarLocadorPorId(1, 2, 'USER')).rejects.toThrow(
+      NotFoundException,
+    );
+
+    expect(prismaMock.locador.findFirst).toHaveBeenLastCalledWith(
+      expect.objectContaining({
+        where: { id: BigInt(1), usuario_id: BigInt(2) },
+      }),
+    );
   });
 
   it('deve listar locadores inativos quando status for informado', async () => {
@@ -101,9 +188,7 @@ describe('LocadorService', () => {
         usuario_id: BigInt(1),
         status: StatusLocador.INATIVO,
       },
-      include: {
-        endereco_locador: true,
-      },
+      include: INCLUDE_LOCADOR_COMPLETO,
       orderBy: {
         id: 'desc',
       },
@@ -128,9 +213,7 @@ describe('LocadorService', () => {
         id: BigInt(1),
         usuario_id: BigInt(1),
       },
-      include: {
-        endereco_locador: true,
-      },
+      include: INCLUDE_LOCADOR_COMPLETO,
     });
 
     expect(resultado).toMatchObject({
@@ -164,9 +247,7 @@ describe('LocadorService', () => {
       data: {
         status: StatusLocador.INATIVO,
       },
-      include: {
-        endereco_locador: true,
-      },
+      include: INCLUDE_LOCADOR_COMPLETO,
     });
 
     expect(resultado.status).toBe(StatusLocador.INATIVO);
@@ -192,9 +273,7 @@ describe('LocadorService', () => {
       data: {
         status: StatusLocador.ATIVO,
       },
-      include: {
-        endereco_locador: true,
-      },
+      include: INCLUDE_LOCADOR_COMPLETO,
     });
 
     expect(resultado.status).toBe(StatusLocador.ATIVO);
