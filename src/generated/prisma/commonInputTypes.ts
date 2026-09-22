@@ -112,6 +112,13 @@ export type StringNullableWithAggregatesFilter<$PrismaModel = never> = {
   _max?: Prisma.NestedStringNullableFilter<$PrismaModel>
 }
 
+export type Enumtipo_pessoaFilter<$PrismaModel = never> = {
+  equals?: $Enums.tipo_pessoa | Prisma.Enumtipo_pessoaFieldRefInput<$PrismaModel>
+  in?: $Enums.tipo_pessoa[]
+  notIn?: $Enums.tipo_pessoa[]
+  not?: Prisma.NestedEnumtipo_pessoaFilter<$PrismaModel> | $Enums.tipo_pessoa
+}
+
 export type Enumlocador_statusFilter<$PrismaModel = never> = {
   equals?: $Enums.locador_status | Prisma.Enumlocador_statusFieldRefInput<$PrismaModel>
   in?: $Enums.locador_status[]
@@ -128,6 +135,16 @@ export type DateTimeFilter<$PrismaModel = never> = {
   gt?: Date | string | Prisma.DateTimeFieldRefInput<$PrismaModel>
   gte?: Date | string | Prisma.DateTimeFieldRefInput<$PrismaModel>
   not?: Prisma.NestedDateTimeFilter<$PrismaModel> | Date | string
+}
+
+export type Enumtipo_pessoaWithAggregatesFilter<$PrismaModel = never> = {
+  equals?: $Enums.tipo_pessoa | Prisma.Enumtipo_pessoaFieldRefInput<$PrismaModel>
+  in?: $Enums.tipo_pessoa[]
+  notIn?: $Enums.tipo_pessoa[]
+  not?: Prisma.NestedEnumtipo_pessoaWithAggregatesFilter<$PrismaModel> | $Enums.tipo_pessoa
+  _count?: Prisma.NestedIntFilter<$PrismaModel>
+  _min?: Prisma.NestedEnumtipo_pessoaFilter<$PrismaModel>
+  _max?: Prisma.NestedEnumtipo_pessoaFilter<$PrismaModel>
 }
 
 export type Enumlocador_statusWithAggregatesFilter<$PrismaModel = never> = {
@@ -280,6 +297,13 @@ export type NestedIntNullableFilter<$PrismaModel = never> = {
   not?: Prisma.NestedIntNullableFilter<$PrismaModel> | number | null
 }
 
+export type NestedEnumtipo_pessoaFilter<$PrismaModel = never> = {
+  equals?: $Enums.tipo_pessoa | Prisma.Enumtipo_pessoaFieldRefInput<$PrismaModel>
+  in?: $Enums.tipo_pessoa[]
+  notIn?: $Enums.tipo_pessoa[]
+  not?: Prisma.NestedEnumtipo_pessoaFilter<$PrismaModel> | $Enums.tipo_pessoa
+}
+
 export type NestedEnumlocador_statusFilter<$PrismaModel = never> = {
   equals?: $Enums.locador_status | Prisma.Enumlocador_statusFieldRefInput<$PrismaModel>
   in?: $Enums.locador_status[]
@@ -296,6 +320,16 @@ export type NestedDateTimeFilter<$PrismaModel = never> = {
   gt?: Date | string | Prisma.DateTimeFieldRefInput<$PrismaModel>
   gte?: Date | string | Prisma.DateTimeFieldRefInput<$PrismaModel>
   not?: Prisma.NestedDateTimeFilter<$PrismaModel> | Date | string
+}
+
+export type NestedEnumtipo_pessoaWithAggregatesFilter<$PrismaModel = never> = {
+  equals?: $Enums.tipo_pessoa | Prisma.Enumtipo_pessoaFieldRefInput<$PrismaModel>
+  in?: $Enums.tipo_pessoa[]
+  notIn?: $Enums.tipo_pessoa[]
+  not?: Prisma.NestedEnumtipo_pessoaWithAggregatesFilter<$PrismaModel> | $Enums.tipo_pessoa
+  _count?: Prisma.NestedIntFilter<$PrismaModel>
+  _min?: Prisma.NestedEnumtipo_pessoaFilter<$PrismaModel>
+  _max?: Prisma.NestedEnumtipo_pessoaFilter<$PrismaModel>
 }
 
 export type NestedEnumlocador_statusWithAggregatesFilter<$PrismaModel = never> = {

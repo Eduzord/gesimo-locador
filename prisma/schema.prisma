@@ -23,17 +23,39 @@ model endereco_locador {
 }
 
 model locador {
-  id               BigInt            @id @default(autoincrement())
-  usuario_id       BigInt
-  nome             String            @db.VarChar(150)
-  cpf              String            @unique(map: "cpf") @db.VarChar(14)
-  email            String            @unique(map: "email") @db.VarChar(150)
-  status           locador_status    @default(ATIVO)
-  criado_em        DateTime          @default(now()) @db.DateTime(0)
-  atualizado_em    DateTime          @default(now()) @db.DateTime(0)
-  endereco_locador endereco_locador?
+  id                      BigInt                   @id @default(autoincrement())
+  usuario_id              BigInt
+  tipo_pessoa             tipo_pessoa
+  email                   String                   @unique(map: "email") @db.VarChar(150)
+  status                  locador_status           @default(ATIVO)
+  criado_em               DateTime                 @default(now()) @db.DateTime(0)
+  atualizado_em           DateTime                 @default(now()) @db.DateTime(0)
+  endereco_locador        endereco_locador?
+  locador_pessoa_fisica   locador_pessoa_fisica?
+  locador_pessoa_juridica locador_pessoa_juridica?
 
   @@index([usuario_id], map: "idx_locador_usuario_id")
+}
+
+model locador_pessoa_fisica {
+  locador_id BigInt  @id
+  nome       String  @db.VarChar(150)
+  cpf        String  @unique(map: "cpf") @db.VarChar(14)
+  rg         String? @db.VarChar(20)
+  locador    locador @relation(fields: [locador_id], references: [id], onDelete: Cascade, map: "fk_locador_pessoa_fisica")
+}
+
+model locador_pessoa_juridica {
+  locador_id         BigInt  @id
+  razao_social       String  @db.VarChar(150)
+  cnpj               String  @unique(map: "cnpj") @db.VarChar(18)
+  inscricao_estadual String? @db.VarChar(50)
+  locador            locador @relation(fields: [locador_id], references: [id], onDelete: Cascade, map: "fk_locador_pessoa_juridica")
+}
+
+enum tipo_pessoa {
+  FISICA
+  JURIDICA
 }
 
 enum locador_status {

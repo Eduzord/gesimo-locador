@@ -385,7 +385,9 @@ type FieldRefInputType<Model, FieldType> = Model extends never ? never : FieldRe
 
 export const ModelName = {
   endereco_locador: 'endereco_locador',
-  locador: 'locador'
+  locador: 'locador',
+  locador_pessoa_fisica: 'locador_pessoa_fisica',
+  locador_pessoa_juridica: 'locador_pessoa_juridica'
 } as const
 
 export type ModelName = (typeof ModelName)[keyof typeof ModelName]
@@ -401,7 +403,7 @@ export type TypeMap<ExtArgs extends runtime.Types.Extensions.InternalArgs = runt
     omit: GlobalOmitOptions
   }
   meta: {
-    modelProps: "endereco_locador" | "locador"
+    modelProps: "endereco_locador" | "locador" | "locador_pessoa_fisica" | "locador_pessoa_juridica"
     txIsolationLevel: TransactionIsolationLevel
   }
   model: {
@@ -537,6 +539,138 @@ export type TypeMap<ExtArgs extends runtime.Types.Extensions.InternalArgs = runt
         }
       }
     }
+    locador_pessoa_fisica: {
+      payload: Prisma.$locador_pessoa_fisicaPayload<ExtArgs>
+      fields: Prisma.locador_pessoa_fisicaFieldRefs
+      operations: {
+        findUnique: {
+          args: Prisma.locador_pessoa_fisicaFindUniqueArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$locador_pessoa_fisicaPayload> | null
+        }
+        findUniqueOrThrow: {
+          args: Prisma.locador_pessoa_fisicaFindUniqueOrThrowArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$locador_pessoa_fisicaPayload>
+        }
+        findFirst: {
+          args: Prisma.locador_pessoa_fisicaFindFirstArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$locador_pessoa_fisicaPayload> | null
+        }
+        findFirstOrThrow: {
+          args: Prisma.locador_pessoa_fisicaFindFirstOrThrowArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$locador_pessoa_fisicaPayload>
+        }
+        findMany: {
+          args: Prisma.locador_pessoa_fisicaFindManyArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$locador_pessoa_fisicaPayload>[]
+        }
+        create: {
+          args: Prisma.locador_pessoa_fisicaCreateArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$locador_pessoa_fisicaPayload>
+        }
+        createMany: {
+          args: Prisma.locador_pessoa_fisicaCreateManyArgs<ExtArgs>
+          result: BatchPayload
+        }
+        delete: {
+          args: Prisma.locador_pessoa_fisicaDeleteArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$locador_pessoa_fisicaPayload>
+        }
+        update: {
+          args: Prisma.locador_pessoa_fisicaUpdateArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$locador_pessoa_fisicaPayload>
+        }
+        deleteMany: {
+          args: Prisma.locador_pessoa_fisicaDeleteManyArgs<ExtArgs>
+          result: BatchPayload
+        }
+        updateMany: {
+          args: Prisma.locador_pessoa_fisicaUpdateManyArgs<ExtArgs>
+          result: BatchPayload
+        }
+        upsert: {
+          args: Prisma.locador_pessoa_fisicaUpsertArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$locador_pessoa_fisicaPayload>
+        }
+        aggregate: {
+          args: Prisma.Locador_pessoa_fisicaAggregateArgs<ExtArgs>
+          result: runtime.Types.Utils.Optional<Prisma.AggregateLocador_pessoa_fisica>
+        }
+        groupBy: {
+          args: Prisma.locador_pessoa_fisicaGroupByArgs<ExtArgs>
+          result: runtime.Types.Utils.Optional<Prisma.Locador_pessoa_fisicaGroupByOutputType>[]
+        }
+        count: {
+          args: Prisma.locador_pessoa_fisicaCountArgs<ExtArgs>
+          result: runtime.Types.Utils.Optional<Prisma.Locador_pessoa_fisicaCountAggregateOutputType> | number
+        }
+      }
+    }
+    locador_pessoa_juridica: {
+      payload: Prisma.$locador_pessoa_juridicaPayload<ExtArgs>
+      fields: Prisma.locador_pessoa_juridicaFieldRefs
+      operations: {
+        findUnique: {
+          args: Prisma.locador_pessoa_juridicaFindUniqueArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$locador_pessoa_juridicaPayload> | null
+        }
+        findUniqueOrThrow: {
+          args: Prisma.locador_pessoa_juridicaFindUniqueOrThrowArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$locador_pessoa_juridicaPayload>
+        }
+        findFirst: {
+          args: Prisma.locador_pessoa_juridicaFindFirstArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$locador_pessoa_juridicaPayload> | null
+        }
+        findFirstOrThrow: {
+          args: Prisma.locador_pessoa_juridicaFindFirstOrThrowArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$locador_pessoa_juridicaPayload>
+        }
+        findMany: {
+          args: Prisma.locador_pessoa_juridicaFindManyArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$locador_pessoa_juridicaPayload>[]
+        }
+        create: {
+          args: Prisma.locador_pessoa_juridicaCreateArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$locador_pessoa_juridicaPayload>
+        }
+        createMany: {
+          args: Prisma.locador_pessoa_juridicaCreateManyArgs<ExtArgs>
+          result: BatchPayload
+        }
+        delete: {
+          args: Prisma.locador_pessoa_juridicaDeleteArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$locador_pessoa_juridicaPayload>
+        }
+        update: {
+          args: Prisma.locador_pessoa_juridicaUpdateArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$locador_pessoa_juridicaPayload>
+        }
+        deleteMany: {
+          args: Prisma.locador_pessoa_juridicaDeleteManyArgs<ExtArgs>
+          result: BatchPayload
+        }
+        updateMany: {
+          args: Prisma.locador_pessoa_juridicaUpdateManyArgs<ExtArgs>
+          result: BatchPayload
+        }
+        upsert: {
+          args: Prisma.locador_pessoa_juridicaUpsertArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$locador_pessoa_juridicaPayload>
+        }
+        aggregate: {
+          args: Prisma.Locador_pessoa_juridicaAggregateArgs<ExtArgs>
+          result: runtime.Types.Utils.Optional<Prisma.AggregateLocador_pessoa_juridica>
+        }
+        groupBy: {
+          args: Prisma.locador_pessoa_juridicaGroupByArgs<ExtArgs>
+          result: runtime.Types.Utils.Optional<Prisma.Locador_pessoa_juridicaGroupByOutputType>[]
+        }
+        count: {
+          args: Prisma.locador_pessoa_juridicaCountArgs<ExtArgs>
+          result: runtime.Types.Utils.Optional<Prisma.Locador_pessoa_juridicaCountAggregateOutputType> | number
+        }
+      }
+    }
   }
 } & {
   other: {
@@ -593,8 +727,7 @@ export type Endereco_locadorScalarFieldEnum = (typeof Endereco_locadorScalarFiel
 export const LocadorScalarFieldEnum = {
   id: 'id',
   usuario_id: 'usuario_id',
-  nome: 'nome',
-  cpf: 'cpf',
+  tipo_pessoa: 'tipo_pessoa',
   email: 'email',
   status: 'status',
   criado_em: 'criado_em',
@@ -602,6 +735,26 @@ export const LocadorScalarFieldEnum = {
 } as const
 
 export type LocadorScalarFieldEnum = (typeof LocadorScalarFieldEnum)[keyof typeof LocadorScalarFieldEnum]
+
+
+export const Locador_pessoa_fisicaScalarFieldEnum = {
+  locador_id: 'locador_id',
+  nome: 'nome',
+  cpf: 'cpf',
+  rg: 'rg'
+} as const
+
+export type Locador_pessoa_fisicaScalarFieldEnum = (typeof Locador_pessoa_fisicaScalarFieldEnum)[keyof typeof Locador_pessoa_fisicaScalarFieldEnum]
+
+
+export const Locador_pessoa_juridicaScalarFieldEnum = {
+  locador_id: 'locador_id',
+  razao_social: 'razao_social',
+  cnpj: 'cnpj',
+  inscricao_estadual: 'inscricao_estadual'
+} as const
+
+export type Locador_pessoa_juridicaScalarFieldEnum = (typeof Locador_pessoa_juridicaScalarFieldEnum)[keyof typeof Locador_pessoa_juridicaScalarFieldEnum]
 
 
 export const SortOrder = {
@@ -634,12 +787,28 @@ export type endereco_locadorOrderByRelevanceFieldEnum = (typeof endereco_locador
 
 
 export const locadorOrderByRelevanceFieldEnum = {
-  nome: 'nome',
-  cpf: 'cpf',
   email: 'email'
 } as const
 
 export type locadorOrderByRelevanceFieldEnum = (typeof locadorOrderByRelevanceFieldEnum)[keyof typeof locadorOrderByRelevanceFieldEnum]
+
+
+export const locador_pessoa_fisicaOrderByRelevanceFieldEnum = {
+  nome: 'nome',
+  cpf: 'cpf',
+  rg: 'rg'
+} as const
+
+export type locador_pessoa_fisicaOrderByRelevanceFieldEnum = (typeof locador_pessoa_fisicaOrderByRelevanceFieldEnum)[keyof typeof locador_pessoa_fisicaOrderByRelevanceFieldEnum]
+
+
+export const locador_pessoa_juridicaOrderByRelevanceFieldEnum = {
+  razao_social: 'razao_social',
+  cnpj: 'cnpj',
+  inscricao_estadual: 'inscricao_estadual'
+} as const
+
+export type locador_pessoa_juridicaOrderByRelevanceFieldEnum = (typeof locador_pessoa_juridicaOrderByRelevanceFieldEnum)[keyof typeof locador_pessoa_juridicaOrderByRelevanceFieldEnum]
 
 
 
@@ -659,6 +828,13 @@ export type BigIntFieldRefInput<$PrismaModel> = FieldRefInputType<$PrismaModel, 
  * Reference to a field of type 'String'
  */
 export type StringFieldRefInput<$PrismaModel> = FieldRefInputType<$PrismaModel, 'String'>
+    
+
+
+/**
+ * Reference to a field of type 'tipo_pessoa'
+ */
+export type Enumtipo_pessoaFieldRefInput<$PrismaModel> = FieldRefInputType<$PrismaModel, 'tipo_pessoa'>
     
 
 
@@ -801,6 +977,8 @@ export type PrismaClientOptions = ({
 export type GlobalOmitConfig = {
   endereco_locador?: Prisma.endereco_locadorOmit
   locador?: Prisma.locadorOmit
+  locador_pessoa_fisica?: Prisma.locador_pessoa_fisicaOmit
+  locador_pessoa_juridica?: Prisma.locador_pessoa_juridicaOmit
 }
 
 /* Types for Logging */

@@ -1,5 +1,6 @@
 import { ApiProperty, ApiPropertyOptional } from '@nestjs/swagger';
 import { StatusLocador } from '../enums/status-locador.enum';
+import { TipoPessoaLocador } from '../enums/tipo-pessoa-locador.enum';
 import { EnderecoLocadorResponseDto } from './endereco-locador-response.dto';
 
 export class LocadorResponseDto {
@@ -16,16 +17,11 @@ export class LocadorResponseDto {
   usuarioId!: number;
 
   @ApiProperty({
-    example: 'João da Silva',
-    description: 'Nome completo do locador.',
+    enum: TipoPessoaLocador,
+    example: TipoPessoaLocador.FISICA,
+    description: 'Tipo de pessoa do locador: física (CPF) ou jurídica (CNPJ).',
   })
-  nome!: string;
-
-  @ApiProperty({
-    example: '12345678901',
-    description: 'CPF do locador.',
-  })
-  cpf!: string;
+  tipoPessoa!: TipoPessoaLocador;
 
   @ApiProperty({
     example: 'joao@email.com',
@@ -51,6 +47,42 @@ export class LocadorResponseDto {
     description: 'Data da última atualização do registro.',
   })
   atualizadoEm!: string;
+
+  @ApiPropertyOptional({
+    example: 'João da Silva',
+    description: 'Nome completo do locador (pessoa física).',
+  })
+  nome?: string | null;
+
+  @ApiPropertyOptional({
+    example: '12345678901',
+    description: 'CPF do locador (pessoa física).',
+  })
+  cpf?: string | null;
+
+  @ApiPropertyOptional({
+    example: '123456789',
+    description: 'RG do locador (pessoa física).',
+  })
+  rg?: string | null;
+
+  @ApiPropertyOptional({
+    example: 'Imóveis Silva Ltda',
+    description: 'Razão social do locador (pessoa jurídica).',
+  })
+  razaoSocial?: string | null;
+
+  @ApiPropertyOptional({
+    example: '12345678000190',
+    description: 'CNPJ do locador (pessoa jurídica).',
+  })
+  cnpj?: string | null;
+
+  @ApiPropertyOptional({
+    example: '123456789',
+    description: 'Inscrição estadual do locador (pessoa jurídica).',
+  })
+  inscricaoEstadual?: string | null;
 
   @ApiPropertyOptional({
     type: EnderecoLocadorResponseDto,

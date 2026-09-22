@@ -52,7 +52,9 @@ export const AnyNull = runtime.AnyNull
 
 export const ModelName = {
   endereco_locador: 'endereco_locador',
-  locador: 'locador'
+  locador: 'locador',
+  locador_pessoa_fisica: 'locador_pessoa_fisica',
+  locador_pessoa_juridica: 'locador_pessoa_juridica'
 } as const
 
 export type ModelName = (typeof ModelName)[keyof typeof ModelName]
@@ -88,8 +90,7 @@ export type Endereco_locadorScalarFieldEnum = (typeof Endereco_locadorScalarFiel
 export const LocadorScalarFieldEnum = {
   id: 'id',
   usuario_id: 'usuario_id',
-  nome: 'nome',
-  cpf: 'cpf',
+  tipo_pessoa: 'tipo_pessoa',
   email: 'email',
   status: 'status',
   criado_em: 'criado_em',
@@ -97,6 +98,26 @@ export const LocadorScalarFieldEnum = {
 } as const
 
 export type LocadorScalarFieldEnum = (typeof LocadorScalarFieldEnum)[keyof typeof LocadorScalarFieldEnum]
+
+
+export const Locador_pessoa_fisicaScalarFieldEnum = {
+  locador_id: 'locador_id',
+  nome: 'nome',
+  cpf: 'cpf',
+  rg: 'rg'
+} as const
+
+export type Locador_pessoa_fisicaScalarFieldEnum = (typeof Locador_pessoa_fisicaScalarFieldEnum)[keyof typeof Locador_pessoa_fisicaScalarFieldEnum]
+
+
+export const Locador_pessoa_juridicaScalarFieldEnum = {
+  locador_id: 'locador_id',
+  razao_social: 'razao_social',
+  cnpj: 'cnpj',
+  inscricao_estadual: 'inscricao_estadual'
+} as const
+
+export type Locador_pessoa_juridicaScalarFieldEnum = (typeof Locador_pessoa_juridicaScalarFieldEnum)[keyof typeof Locador_pessoa_juridicaScalarFieldEnum]
 
 
 export const SortOrder = {
@@ -129,10 +150,26 @@ export type endereco_locadorOrderByRelevanceFieldEnum = (typeof endereco_locador
 
 
 export const locadorOrderByRelevanceFieldEnum = {
-  nome: 'nome',
-  cpf: 'cpf',
   email: 'email'
 } as const
 
 export type locadorOrderByRelevanceFieldEnum = (typeof locadorOrderByRelevanceFieldEnum)[keyof typeof locadorOrderByRelevanceFieldEnum]
+
+
+export const locador_pessoa_fisicaOrderByRelevanceFieldEnum = {
+  nome: 'nome',
+  cpf: 'cpf',
+  rg: 'rg'
+} as const
+
+export type locador_pessoa_fisicaOrderByRelevanceFieldEnum = (typeof locador_pessoa_fisicaOrderByRelevanceFieldEnum)[keyof typeof locador_pessoa_fisicaOrderByRelevanceFieldEnum]
+
+
+export const locador_pessoa_juridicaOrderByRelevanceFieldEnum = {
+  razao_social: 'razao_social',
+  cnpj: 'cnpj',
+  inscricao_estadual: 'inscricao_estadual'
+} as const
+
+export type locador_pessoa_juridicaOrderByRelevanceFieldEnum = (typeof locador_pessoa_juridicaOrderByRelevanceFieldEnum)[keyof typeof locador_pessoa_juridicaOrderByRelevanceFieldEnum]
 

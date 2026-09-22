@@ -10,4 +10,6 @@
  */
 export type * from './models/endereco_locador.js'
 export type * from './models/locador.js'
+export type * from './models/locador_pessoa_fisica.js'
+export type * from './models/locador_pessoa_juridica.js'
 export type * from './commonInputTypes.js'

@@ -9,6 +9,14 @@
 * 🟢 You can import this file directly.
 */
 
+export const tipo_pessoa = {
+  FISICA: 'FISICA',
+  JURIDICA: 'JURIDICA'
+} as const
+
+export type tipo_pessoa = (typeof tipo_pessoa)[keyof typeof tipo_pessoa]
+
+
 export const locador_status = {
   ATIVO: 'ATIVO',
   INATIVO: 'INATIVO'

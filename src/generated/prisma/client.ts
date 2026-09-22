@@ -49,3 +49,13 @@ export type endereco_locador = Prisma.endereco_locadorModel
  * 
  */
 export type locador = Prisma.locadorModel
+/**
+ * Model locador_pessoa_fisica
+ * 
+ */
+export type locador_pessoa_fisica = Prisma.locador_pessoa_fisicaModel
+/**
+ * Model locador_pessoa_juridica
+ * 
+ */
+export type locador_pessoa_juridica = Prisma.locador_pessoa_juridicaModel
